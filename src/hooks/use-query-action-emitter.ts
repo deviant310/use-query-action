@@ -1,12 +1,14 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo } from "react";
 
-import { useQueryClient } from "@tanstack/react-query";
+import {
+  MutationState,
+  useMutation,
+  useMutationState,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import { getQueryActionKey } from "../helpers";
-import {
-  QueryActionEmitterHook,
-  QueryActionEmitterHookPerformer,
-} from "../types";
+import { QueryActionEmitterHook, QueryActionPerformer } from "../types";
 
 export const useQueryActionEmitter: QueryActionEmitterHook = (
   action,
@@ -16,47 +18,48 @@ export const useQueryActionEmitter: QueryActionEmitterHook = (
   type Params = Parameters<Action>;
   type Data = Awaited<ReturnType<Action>>;
 
-  const { onError }: typeof options = { ...options };
+  const { onSuccess, onError } = options ?? {};
 
   const queryClient = useQueryClient();
-  const [data, setData] = useState<Data | null>(null);
-  const [error, setError] = useState<Error | null>(null);
-  const [isLoading, setLoading] = useState(false);
-  const [isSuccess, setSuccess] = useState(false);
+  const queryKey = useMemo(() => [getQueryActionKey(action)], [action]);
+
+  const { mutate } = useMutation({
+    mutationKey: queryKey,
+    mutationFn: (args: Params) => action(...args),
+    onSuccess,
+    onError,
+  });
+
+  const mutations = useMutationState({
+    filters: { mutationKey: queryKey },
+    select: mutation => mutation.state as MutationState<Data>,
+  });
 
   const perform = useCallback(
-    (...args: Params) => {
-      setData(null);
-      setError(null);
-      setSuccess(false);
-      setLoading(true);
+    (...args: Params) => mutate(args),
+    [mutate],
+  ) as QueryActionPerformer<Action>;
 
-      queryClient
-        .fetchQuery({
-          queryFn: () => action(...args),
-          queryKey: [getQueryActionKey(action), ...args],
-          gcTime: 0,
-        })
-        .then(data => {
-          setData(data);
-          setSuccess(true);
-        })
-        .catch(err => {
-          setError(err);
-          onError?.(err);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+  const { data, status, error } = mutations[mutations.length - 1] ?? {};
+
+  const isLoading = status === "pending";
+  const isSuccess = status === "success";
+
+  const invalidate = useCallback(
+    (...args: Params) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKey.concat(args),
+      });
     },
-    [action, onError, queryClient],
-  ) as QueryActionEmitterHookPerformer<Action>;
+    [queryClient, queryKey],
+  ) as QueryActionPerformer<Action>;
 
   return {
     data,
-    perform,
     isSuccess,
     isLoading,
-    error: error as never,
+    error,
+    perform,
+    invalidate,
   };
 };

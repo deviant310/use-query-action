@@ -1,31 +1,31 @@
-import globals from "globals";
-import pluginJs from "@eslint/js";
-import tseslint from "typescript-eslint";
-import eslintPluginReactHooks from "eslint-plugin-react-hooks";
-import eslintPluginPrettier from "eslint-plugin-prettier";
-import perfectionist from "eslint-plugin-perfectionist";
 import { fixupPluginRules } from "@eslint/compat";
+import pluginJs from "@eslint/js";
+import perfectionist from "eslint-plugin-perfectionist";
+import eslintPluginPrettier from "eslint-plugin-prettier";
+import eslintPluginReactHooks from "eslint-plugin-react-hooks";
+import globals from "globals";
+import tseslint from "typescript-eslint";
 
 // TODO добавить условные правила при NODE_ENV=production
 export default [
   {
     languageOptions: {
-      globals: globals.browser
-    }
+      globals: globals.browser,
+    },
   },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   {
     plugins: {
-      "prettier": eslintPluginPrettier
+      prettier: eslintPluginPrettier,
     },
     rules: {
-      "prettier/prettier": "error"
-    }
+      "prettier/prettier": "error",
+    },
   },
   {
     plugins: {
-      perfectionist
+      perfectionist,
     },
     rules: {
       "perfectionist/sort-imports": [
@@ -39,39 +39,38 @@ export default [
             "external",
             "internal",
             "parent",
-            "sibling"
+            "sibling",
           ],
           customGroups: {
-            "value": {
-              "react": ["react", "react-dom/*"]
-            }
-          }
-        }
-      ]
-    }
+            value: {
+              react: ["react", "react-dom/*"],
+            },
+          },
+        },
+      ],
+    },
   },
   {
     plugins: {
-      "react-hooks": fixupPluginRules(eslintPluginReactHooks)
+      "react-hooks": fixupPluginRules(eslintPluginReactHooks),
     },
     rules: {
       "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "error"
-    }
+      "react-hooks/exhaustive-deps": "error",
+    },
   },
   {
     name: "typescript-eslint",
     rules: {
-      "@typescript-eslint/no-unused-vars": "warn"
-    }
+      "@typescript-eslint/no-unused-vars": "warn",
+    },
   },
   {
-    "rules": {
-      "no-undef": "error",
+    rules: {
       "no-undefined": "error",
       "no-void": "error",
       "no-console": "off",
       "no-debugger": "off",
-    }
-  }
+    },
+  },
 ];

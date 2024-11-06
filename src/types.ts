@@ -3,24 +3,19 @@ export type QueryActionHook = QueryActionSubscriberHook &
   QueryActionEmitterHook;
 
 export interface QueryActionSubscriberHook {
-  <Action extends QueryAction, Err = Error>(
+  <Action extends QueryAction>(
     action: Action,
     params: QueryActionParams<Action>,
-    options?: QueryActionSubscriberHookOptions<Err>,
-  ): QueryActionSubscriberHookResult<Action, Err>;
+    options?: QueryActionSubscriberHookOptions,
+  ): QueryActionSubscriberHookResult<Action>;
 }
 
 export interface QueryActionEmitterHook {
-  <Action extends QueryAction, Err = Error>(
+  <Action extends QueryAction>(
     action: Action,
-    options?: QueryActionEmitterHookOptions<Err>,
-  ): QueryActionEmitterHookResult<Action, Err>;
+    options?: QueryActionEmitterHookOptions<Action>,
+  ): QueryActionEmitterHookResult<Action>;
 }
-
-export type QueryActionHookParams<Action extends QueryAction> = readonly [
-  (QueryActionParams<Action> | QueryActionEmitterHookOptions)?,
-  QueryActionSubscriberHookOptions?,
-];
 
 export interface QueryAction {
   (...params: Array<any>): Promise<any>;
@@ -33,24 +28,26 @@ export type QueryActionParams<
   ? []
   : { [K in keyof Params]: Params[K] | undefined };
 
-export interface QueryActionSubscriberHookPerformer {
+export interface QueryActionInvalidator {
   (): void;
 }
 
-export type QueryActionEmitterHookPerformer<Action extends QueryAction> =
+export type QueryActionPerformer<Action extends QueryAction> =
   Parameters<Action> extends void[] & never[]
     ? (...args: void[] & never[]) => void
     : (...args: Parameters<Action>) => void;
 
-export interface QueryActionSubscriberHookOptions<Err = Error> {
+export interface QueryActionSubscriberHookOptions {
   /**
-   * If `true` – once fetched `data` never becomes undefined.
+   * If `always` – once fetched `data` never becomes undefined.
    *
-   * If `false` – `data` becomes undefined after component unmounting
+   * If `never` – `data` becomes undefined after component unmounting
    *
-   * @default undefined
+   * If `auto` – `data` keeping time defined by react-query
+   *
+   * @default auto
    */
-  keepData?: boolean;
+  keepData?: "always" | "never" | "auto";
 
   /**
    * If `true` – only staled `data` will be refetched on component mounting.
@@ -64,16 +61,9 @@ export interface QueryActionSubscriberHookOptions<Err = Error> {
   refetchOnMount?: boolean | "always";
 
   /**
-   * `pending` will be set to `true` only if data is staled
-   *
-   * @default false
-   */
-  pendingOnlyStale?: boolean;
-
-  /**
    * Callback will be called when error occurs
    */
-  onError?(error: Err): void;
+  onError?: (error: unknown) => void;
 
   /**
    * If `true` – action will never be fetched, only subscription will work
@@ -83,37 +73,34 @@ export interface QueryActionSubscriberHookOptions<Err = Error> {
   subscribeOnly?: boolean;
 }
 
-export interface QueryActionEmitterHookOptions<Err = Error> {
+export interface QueryActionEmitterHookOptions<Action extends QueryAction> {
+  /**
+   * Callback will be called when action successfully fetched
+   */
+  onSuccess?: (data: Awaited<ReturnType<Action>>) => void;
+
   /**
    * Callback will be called when error occurs
    */
-  onError?(error: Err): void;
+  onError?: (error: unknown) => void;
 }
 
-export type QueryActionHookResult<
-  Action extends QueryAction,
-  Err = Error,
-> = QueryActionSubscriberHookResult<Action, Err> &
-  QueryActionEmitterHookResult<Action, Err>;
+export type QueryActionHookResult<Action extends QueryAction> =
+  QueryActionSubscriberHookResult<Action> &
+    QueryActionEmitterHookResult<Action>;
 
-export interface QueryActionSubscriberHookResult<
-  Action extends QueryAction,
-  Err = Error,
-> {
+export interface QueryActionSubscriberHookResult<Action extends QueryAction> {
   data: Awaited<ReturnType<Action>> | undefined;
-  perform: QueryActionSubscriberHookPerformer;
   isLoading: boolean;
   isSuccess: boolean;
-  error: Err | null;
+  error: unknown;
 }
 
-export interface QueryActionEmitterHookResult<
-  Action extends QueryAction,
-  Err = Error,
-> {
-  data: Awaited<ReturnType<Action>> | null;
-  perform: QueryActionEmitterHookPerformer<Action>;
+export interface QueryActionEmitterHookResult<Action extends QueryAction> {
+  data: Awaited<ReturnType<Action>> | undefined;
   isLoading: boolean;
   isSuccess: boolean;
-  error: Err | null;
+  error: unknown;
+  perform: QueryActionPerformer<Action>;
+  invalidate: QueryActionPerformer<Action>;
 }

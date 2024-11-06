@@ -1,4 +1,4 @@
 {
   "parser": "babel-ts",
-  "arrowParens": "avoid",
+  "arrowParens": "avoid"
 }

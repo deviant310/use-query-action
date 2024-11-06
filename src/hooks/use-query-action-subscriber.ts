@@ -14,17 +14,11 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
   type Data = Awaited<ReturnType<Action>>;
 
   const {
-    keepData,
-    pendingOnlyStale,
-    refetchOnMount,
+    keepData = "auto",
+    refetchOnMount = true,
     onError,
-    subscribeOnly,
-  }: typeof options = {
-    pendingOnlyStale: false,
-    refetchOnMount: true,
-    subscribeOnly: false,
-    ...options,
-  };
+    subscribeOnly = false,
+  } = options ?? {};
 
   const queryKey = useMemo(
     () => [getQueryActionKey(action), ...args],
@@ -44,8 +38,8 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
 
   const gcTime = useMemo(() => {
     if (!enabled) return 0;
-    if (keepData === true) return Infinity;
-    if (keepData === false) return 0;
+    if (keepData === "always") return Infinity;
+    if (keepData === "never") return 0;
   }, [enabled, keepData]);
 
   const throwOnError = useCallback(
@@ -57,7 +51,12 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
     [onError],
   );
 
-  const { data, isFetching, isSuccess, isStale, refetch, error } = useQuery({
+  const {
+    data,
+    isFetching: isLoading,
+    isSuccess,
+    error,
+  } = useQuery({
     queryKey,
     queryFn,
     enabled,
@@ -66,15 +65,5 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
     throwOnError,
   });
 
-  const perform = useCallback(() => {
-    refetch();
-  }, [refetch]);
-
-  const isLoading = useMemo(() => {
-    if (pendingOnlyStale) return isFetching && isStale;
-
-    return isFetching;
-  }, [isFetching, isStale, pendingOnlyStale]);
-
-  return { data, perform, isLoading, isSuccess, error };
+  return { data, isLoading, isSuccess, error };
 };
