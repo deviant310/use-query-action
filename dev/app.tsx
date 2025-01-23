@@ -15,15 +15,15 @@ export const App = () => {
 
       {!data && isLoading && <div>loading...</div>}
 
-      {data && <div style={{ opacity: isLoading ? 0.5 : 1 }}>{data}</div>}
+      {data && <div style={{ opacity: isLoading ? 0.5 : 1 }}>{data.hello}</div>}
     </>
   );
 };
 
 const action = async () => {
-  return new Promise<string>(resolve =>
+  return new Promise<{ hello: string }>(resolve =>
     setTimeout(() => {
-      resolve("data");
+      resolve({ hello: "data" });
     }, 1000),
   );
 };

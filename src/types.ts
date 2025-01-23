@@ -3,18 +3,18 @@ export type QueryActionHook = QueryActionSubscriberHook &
   QueryActionEmitterHook;
 
 export interface QueryActionSubscriberHook {
-  <Action extends QueryAction>(
+  <Action extends QueryAction, Data = Awaited<ReturnType<Action>>>(
     action: Action,
     params: QueryActionParams<Action>,
-    options?: QueryActionSubscriberHookOptions,
-  ): QueryActionSubscriberHookResult<Action>;
+    options?: QueryActionSubscriberHookOptions<Action, Data>,
+  ): QueryActionSubscriberHookResult<Action, Data>;
 }
 
 export interface QueryActionEmitterHook {
-  <Action extends QueryAction>(
+  <Action extends QueryAction, Data = Awaited<ReturnType<Action>>>(
     action: Action,
     options?: QueryActionEmitterHookOptions<Action>,
-  ): QueryActionEmitterHookResult<Action>;
+  ): QueryActionEmitterHookResult<Action, Data>;
 }
 
 export interface QueryAction {
@@ -37,7 +37,10 @@ export type QueryActionPerformer<Action extends QueryAction> =
     ? (...args: void[] & never[]) => void
     : (...args: Parameters<Action>) => void;
 
-export interface QueryActionSubscriberHookOptions {
+export interface QueryActionSubscriberHookOptions<
+  Action extends QueryAction,
+  Data = Awaited<ReturnType<Action>>,
+> {
   /**
    * If `always` – once fetched `data` never becomes undefined.
    *
@@ -59,6 +62,11 @@ export interface QueryActionSubscriberHookOptions {
    * @default true
    */
   refetchOnMount?: boolean | "always";
+
+  /**
+   * Data selector
+   */
+  select?: (data: Awaited<ReturnType<Action>>) => Data;
 
   /**
    * Callback will be called when error occurs
@@ -89,15 +97,21 @@ export type QueryActionHookResult<Action extends QueryAction> =
   QueryActionSubscriberHookResult<Action> &
     QueryActionEmitterHookResult<Action>;
 
-export interface QueryActionSubscriberHookResult<Action extends QueryAction> {
-  data: Awaited<ReturnType<Action>> | undefined;
+export interface QueryActionSubscriberHookResult<
+  Action extends QueryAction,
+  Data = Awaited<ReturnType<Action>>,
+> {
+  data: Data | undefined;
   isLoading: boolean;
   isSuccess: boolean;
   error: unknown;
 }
 
-export interface QueryActionEmitterHookResult<Action extends QueryAction> {
-  data: Awaited<ReturnType<Action>> | undefined;
+export interface QueryActionEmitterHookResult<
+  Action extends QueryAction,
+  Data = Awaited<ReturnType<Action>>,
+> {
+  data: Data | undefined;
   isLoading: boolean;
   isSuccess: boolean;
   error: unknown;

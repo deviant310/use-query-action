@@ -10,7 +10,7 @@ export const useQueryAction: QueryActionHook = (action, ...hookArgs) => {
   const [args, options] = Array.isArray(hookArgs[0])
     ? <const>[
         hookArgs[0] as QueryActionParams<typeof action>,
-        hookArgs[1] as QueryActionSubscriberHookOptions,
+        hookArgs[1] as QueryActionSubscriberHookOptions<typeof action>,
       ]
     : <const>[null, hookArgs[0]];
 

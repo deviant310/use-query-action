@@ -17,6 +17,7 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
     keepData = "auto",
     refetchOnMount = true,
     onError,
+    select,
     subscribeOnly = false,
   } = options ?? {};
 
@@ -59,6 +60,7 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
   } = useQuery({
     queryKey,
     queryFn,
+    select,
     enabled,
     refetchOnMount,
     gcTime,

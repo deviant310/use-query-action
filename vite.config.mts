@@ -25,7 +25,7 @@ export default defineConfig(({ command }) => ({
     checker({
       typescript: {
         tsconfigPath:
-          command === "serve" ? "./tsconfig.dev.json" : "./tsconfig.json",
+          command === "serve" ? "./tsconfig.json" : "./tsconfig.build.json",
       },
       eslint: {
         lintCommand: `eslint ./src`,
