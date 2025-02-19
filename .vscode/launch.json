@@ -1,0 +1,39 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "pack",
+      "request": "launch",
+      "runtimeArgs": [
+        "pack"
+      ],
+      "runtimeExecutable": "npm",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node"
+    },
+    {
+      "name": "build",
+      "request": "launch",
+      "runtimeArgs": [
+        "run",
+        "build"
+      ],
+      "runtimeExecutable": "npm",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node"
+    },
+    {
+      "command": "npm run dev",
+      "name": "dev",
+      "request": "launch",
+      "type": "node-terminal"
+    },
+  ]
+}

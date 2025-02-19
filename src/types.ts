@@ -1,3 +1,5 @@
+import { UseQueryOptions } from "@tanstack/react-query";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type QueryActionHook = QueryActionSubscriberHook &
   QueryActionEmitterHook;
@@ -40,7 +42,10 @@ export type QueryActionPerformer<Action extends QueryAction> =
 export interface QueryActionSubscriberHookOptions<
   Action extends QueryAction,
   Data = Awaited<ReturnType<Action>>,
-> {
+> extends Omit<
+    UseQueryOptions<Awaited<ReturnType<Action>>, Error, Data>,
+    "queryKey" | "queryFn" | "staleTime" | "gcTime" | "throwOnError" | "enabled"
+  > {
   /**
    * If `always` – once fetched `data` never becomes undefined.
    *
@@ -51,22 +56,6 @@ export interface QueryActionSubscriberHookOptions<
    * @default auto
    */
   keepData?: "always" | "never" | "auto";
-
-  /**
-   * If `true` – only staled `data` will be refetched on component mounting.
-   *
-   * If `false` – `data` will never be refetched on component mounting.
-   *
-   * If `always` – `data` will always be refetched on component mounting.
-   *
-   * @default true
-   */
-  refetchOnMount?: boolean | "always";
-
-  /**
-   * Data selector
-   */
-  select?: (data: Awaited<ReturnType<Action>>) => Data;
 
   /**
    * Callback will be called when error occurs

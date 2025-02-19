@@ -3,9 +3,15 @@ import { useCallback } from "react";
 import { useQueryAction } from "../src";
 
 export const App = () => {
-  const { data, isLoading, perform } = useQueryAction(action);
+  const { data, isLoading } = useQueryAction(action, [], {
+    initialData: { greeting: "initial data" },
+    refetchOnMount: ({ options }) => !options.initialData,
+    select: ({ greeting }) => greeting,
+  });
 
-  const onClick = useCallback(() => perform(), [perform]);
+  const onClick = useCallback(() => {
+    //perform()
+  }, []);
 
   return (
     <>
@@ -15,15 +21,17 @@ export const App = () => {
 
       {!data && isLoading && <div>loading...</div>}
 
-      {data && <div style={{ opacity: isLoading ? 0.5 : 1 }}>{data.hello}</div>}
+      {data && <div style={{ opacity: isLoading ? 0.5 : 1 }}>{data}</div>}
     </>
   );
 };
 
 const action = async () => {
-  return new Promise<{ hello: string }>(resolve =>
+  console.log("request initiated!");
+
+  return new Promise<{ greeting: string }>(resolve =>
     setTimeout(() => {
-      resolve({ hello: "data" });
+      resolve({ greeting: "fetched data" });
     }, 1000),
   );
 };

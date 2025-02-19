@@ -5,9 +5,24 @@ import { defineConfig } from "vite";
 import checker from "vite-plugin-checker";
 import dts from "vite-plugin-dts";
 
+const { DEV_SERVER_HOST, DEV_SERVER_PORT } = process.env;
+
+const { host, port } = {
+  host: DEV_SERVER_HOST,
+  get port() {
+    if (DEV_SERVER_PORT) return parseInt(DEV_SERVER_PORT);
+  },
+};
+
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => ({
-  cacheDir: ".yarn/.vite",
+  server: {
+    host,
+    port,
+  },
+  preview: {
+    port,
+  },
   build: {
     target: "es2020",
     lib: {

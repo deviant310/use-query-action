@@ -9,6 +9,9 @@ import tseslint from "typescript-eslint";
 // TODO добавить условные правила при NODE_ENV=production
 export default [
   {
+    ignores: ["dist/*"],
+  },
+  {
     languageOptions: {
       globals: globals.browser,
     },

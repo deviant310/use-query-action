@@ -15,10 +15,9 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
 
   const {
     keepData = "auto",
-    refetchOnMount = true,
     onError,
-    select,
     subscribeOnly = false,
+    ...restOptions
   } = options ?? {};
 
   const queryKey = useMemo(
@@ -44,7 +43,7 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
   }, [enabled, keepData]);
 
   const throwOnError = useCallback(
-    (error: never) => {
+    (error: Error) => {
       onError?.(error);
 
       return false;
@@ -60,11 +59,10 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
   } = useQuery({
     queryKey,
     queryFn,
-    select,
     enabled,
-    refetchOnMount,
     gcTime,
     throwOnError,
+    ...restOptions,
   });
 
   return { data, isLoading, isSuccess, error };
