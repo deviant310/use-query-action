@@ -1,9 +1,8 @@
 import { useCallback, useMemo } from "react";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 
-import { getQueryActionKey } from "../helpers";
-import { QueryActionSubscriberHook } from "../types";
+import { getQueryActionKey, QueryAction, QueryActionParams } from "../helpers";
 
 export const useQueryActionSubscriber: QueryActionSubscriberHook = (
   action,
@@ -67,3 +66,64 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
 
   return { data, isLoading, isSuccess, error };
 };
+
+export interface QueryActionSubscriberHook {
+  <Action extends QueryAction, Data = Awaited<ReturnType<Action>>>(
+    action: Action,
+    params: QueryActionParams<Action>,
+    options?: QueryActionSubscriberHookOptions<Action, Data> & {
+      initialData?: Awaited<ReturnType<Action>>;
+    },
+  ): QueryActionSubscriberHookResult<Action, Data | undefined>;
+}
+
+export interface QueryActionSubscriberHook {
+  <Action extends QueryAction, Data = Awaited<ReturnType<Action>>>(
+    action: Action,
+    params: QueryActionParams<Action>,
+    options?: QueryActionSubscriberHookOptions<Action, Data> & {
+      initialData: Awaited<ReturnType<Action>>;
+    },
+  ): QueryActionSubscriberHookResult<Action, Data>;
+}
+
+export interface QueryActionSubscriberHookOptions<
+  Action extends QueryAction,
+  Data = Awaited<ReturnType<Action>>,
+> extends Omit<
+    UseQueryOptions<Awaited<ReturnType<Action>>, Error, Data>,
+    "queryKey" | "queryFn" | "staleTime" | "gcTime" | "throwOnError" | "enabled"
+  > {
+  /**
+   * If `always` – once fetched `data` never becomes undefined.
+   *
+   * If `never` – `data` becomes undefined after component unmounting
+   *
+   * If `auto` – `data` keeping time defined by react-query
+   *
+   * @default auto
+   */
+  keepData?: "always" | "never" | "auto";
+
+  /**
+   * Callback will be called when error occurs
+   */
+  onError?: (error: unknown) => void;
+
+  /**
+   * If `true` – action will never be fetched, only subscription will work
+   *
+   * @default false
+   */
+  subscribeOnly?: boolean;
+}
+
+export interface QueryActionSubscriberHookResult<
+  Action extends QueryAction,
+  Data = Awaited<ReturnType<Action>>,
+> {
+  data: Data;
+  isLoading: boolean;
+  isSuccess: boolean;
+  error: unknown;
+}

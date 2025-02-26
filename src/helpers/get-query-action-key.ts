@@ -1,4 +1,4 @@
-import { QueryAction } from "../types";
+import { QueryAction } from "./query-action";
 
 const actionsKeysMap = new WeakMap<QueryAction, string>();
 

@@ -1,22 +1,38 @@
-import { useQueryActionSubscriber, useQueryActionEmitter } from "./hooks";
+import { QueryAction } from "./helpers";
 import {
-  QueryActionHook,
-  QueryActionHookResult,
-  QueryActionParams,
+  useQueryActionSubscriber,
   QueryActionSubscriberHookOptions,
-} from "./types";
+  QueryActionSubscriberHook,
+  QueryActionSubscriberHookResult,
+  useQueryActionEmitter,
+  QueryActionEmitterHook,
+  QueryActionEmitterHookResult,
+} from "./hooks";
 
 export const useQueryAction: QueryActionHook = (action, ...hookArgs) => {
-  const [args, options] = Array.isArray(hookArgs[0])
-    ? <const>[
-        hookArgs[0] as QueryActionParams<typeof action>,
-        hookArgs[1] as QueryActionSubscriberHookOptions<typeof action>,
-      ]
-    : <const>[null, hookArgs[0]];
+  if (Array.isArray(hookArgs[0])) {
+    const [args, options] = <const>[
+      hookArgs[0],
+      hookArgs[1] as QueryActionSubscriberHookOptions<typeof action> & {
+        initialData: unknown;
+      },
+    ];
 
-  return <QueryActionHookResult<typeof action>>(
-    (args
-      ? useQueryActionSubscriber.call(null, action, args, options)
-      : useQueryActionEmitter.call(null, action, options))
-  );
+    return <QueryActionHookResult<typeof action>>(
+      useQueryActionSubscriber.call(null, action, args, options)
+    );
+  } else {
+    const [options] = hookArgs;
+
+    return <QueryActionHookResult<typeof action>>(
+      useQueryActionEmitter.call(null, action, options)
+    );
+  }
 };
+
+export type QueryActionHook = QueryActionSubscriberHook &
+  QueryActionEmitterHook;
+
+export type QueryActionHookResult<Action extends QueryAction> =
+  QueryActionSubscriberHookResult<Action> &
+    QueryActionEmitterHookResult<Action>;

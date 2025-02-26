@@ -7,8 +7,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { getQueryActionKey } from "../helpers";
-import { QueryActionEmitterHook, QueryActionPerformer } from "../types";
+import { getQueryActionKey, QueryAction } from "../helpers";
 
 export const useQueryActionEmitter: QueryActionEmitterHook = (
   action,
@@ -38,7 +37,7 @@ export const useQueryActionEmitter: QueryActionEmitterHook = (
   const perform = useCallback(
     (...args: Params) => mutate(args),
     [mutate],
-  ) as QueryActionPerformer<Action>;
+  ) as QueryActionEmitterHookInvoker<Action>;
 
   const { data, status, error } = mutations[mutations.length - 1] ?? {};
 
@@ -52,7 +51,7 @@ export const useQueryActionEmitter: QueryActionEmitterHook = (
       });
     },
     [queryClient, queryKey],
-  ) as QueryActionPerformer<Action>;
+  ) as QueryActionEmitterHookInvoker<Action>;
 
   return {
     data,
@@ -63,3 +62,39 @@ export const useQueryActionEmitter: QueryActionEmitterHook = (
     invalidate,
   };
 };
+
+export interface QueryActionEmitterHook {
+  <Action extends QueryAction, Data = Awaited<ReturnType<Action>>>(
+    action: Action,
+    options?: QueryActionEmitterHookOptions<Action>,
+  ): QueryActionEmitterHookResult<Action, Data | undefined>;
+}
+
+export interface QueryActionEmitterHookOptions<Action extends QueryAction> {
+  /**
+   * Callback will be called when action successfully fetched
+   */
+  onSuccess?: (data: Awaited<ReturnType<Action>>) => void;
+
+  /**
+   * Callback will be called when error occurs
+   */
+  onError?: (error: unknown) => void;
+}
+
+export type QueryActionEmitterHookInvoker<Action extends QueryAction> =
+  Parameters<Action> extends void[] & never[]
+    ? (...args: void[] & never[]) => void
+    : (...args: Parameters<Action>) => void;
+
+export interface QueryActionEmitterHookResult<
+  Action extends QueryAction,
+  Data = Awaited<ReturnType<Action>>,
+> {
+  data: Data;
+  isLoading: boolean;
+  isSuccess: boolean;
+  error: unknown;
+  perform: QueryActionEmitterHookInvoker<Action>;
+  invalidate: QueryActionEmitterHookInvoker<Action>;
+}

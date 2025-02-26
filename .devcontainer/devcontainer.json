@@ -11,8 +11,7 @@
     },
     "vscode": {
       "extensions": [
-        "dbaeumer.vscode-eslint",
-        "waderyan.gitblame"
+        "dbaeumer.vscode-eslint"
       ]
     }
   },
