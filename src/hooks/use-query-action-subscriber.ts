@@ -12,12 +12,7 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
   type Action = typeof action;
   type Data = Awaited<ReturnType<Action>>;
 
-  const {
-    keepData = "auto",
-    onError,
-    subscribeOnly = false,
-    ...restOptions
-  } = options ?? {};
+  const { keepFresh, onError, subscribeOnly, ...restOptions } = options ?? {};
 
   const queryKey = useMemo(
     () => [getQueryActionKey(action), ...args],
@@ -37,9 +32,13 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
 
   const gcTime = useMemo(() => {
     if (!enabled) return 0;
-    if (keepData === "always") return Infinity;
-    if (keepData === "never") return 0;
-  }, [enabled, keepData]);
+
+    return Infinity;
+  }, [enabled]);
+
+  const staleTime = useMemo(() => {
+    if (keepFresh) return Infinity;
+  }, [keepFresh]);
 
   const throwOnError = useCallback(
     (error: Error) => {
@@ -60,6 +59,7 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
     queryFn,
     enabled,
     gcTime,
+    staleTime,
     throwOnError,
     ...restOptions,
   });
@@ -95,15 +95,9 @@ export interface QueryActionSubscriberHookOptions<
     "queryKey" | "queryFn" | "staleTime" | "gcTime" | "throwOnError" | "enabled"
   > {
   /**
-   * If `always` – once fetched `data` never becomes undefined.
-   *
-   * If `never` – `data` becomes undefined after component unmounting
-   *
-   * If `auto` – `data` keeping time defined by react-query
-   *
-   * @default auto
+   * If `true` – once fetched `data` will never becomes staled.
    */
-  keepData?: "always" | "never" | "auto";
+  keepFresh?: boolean;
 
   /**
    * Callback will be called when error occurs
@@ -112,8 +106,6 @@ export interface QueryActionSubscriberHookOptions<
 
   /**
    * If `true` – action will never be fetched, only subscription will work
-   *
-   * @default false
    */
   subscribeOnly?: boolean;
 }
