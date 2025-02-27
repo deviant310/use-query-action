@@ -4,7 +4,7 @@ import { useQueryAction } from "../src";
 
 export const App = () => {
   const { data, isLoading } = useQueryAction(action, [], {
-    initialData: { greeting: "initial data" },
+    placeholderData: { greeting: "initial data" },
     refetchOnMount: ({ options }) => !options.initialData,
     select: ({ greeting }) => greeting,
   });

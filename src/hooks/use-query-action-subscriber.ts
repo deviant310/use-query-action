@@ -71,9 +71,7 @@ export interface QueryActionSubscriberHook {
   <Action extends QueryAction, Data = Awaited<ReturnType<Action>>>(
     action: Action,
     params: QueryActionParams<Action>,
-    options?: QueryActionSubscriberHookOptions<Action, Data> & {
-      initialData?: Awaited<ReturnType<Action>>;
-    },
+    options?: QueryActionSubscriberHookOptions<Action, Data>,
   ): QueryActionSubscriberHookResult<Action, Data | undefined>;
 }
 
@@ -83,6 +81,16 @@ export interface QueryActionSubscriberHook {
     params: QueryActionParams<Action>,
     options?: QueryActionSubscriberHookOptions<Action, Data> & {
       initialData: Awaited<ReturnType<Action>>;
+    },
+  ): QueryActionSubscriberHookResult<Action, Data>;
+}
+
+export interface QueryActionSubscriberHook {
+  <Action extends QueryAction, Data = Awaited<ReturnType<Action>>>(
+    action: Action,
+    params: QueryActionParams<Action>,
+    options?: QueryActionSubscriberHookOptions<Action, Data> & {
+      placeholderData: Awaited<ReturnType<Action>>;
     },
   ): QueryActionSubscriberHookResult<Action, Data>;
 }

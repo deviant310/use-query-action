@@ -15,6 +15,7 @@ export const useQueryAction: QueryActionHook = (action, ...hookArgs) => {
       hookArgs[0],
       hookArgs[1] as QueryActionSubscriberHookOptions<typeof action> & {
         initialData: unknown;
+        placeholderData: unknown;
       },
     ];
 
