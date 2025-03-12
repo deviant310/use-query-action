@@ -47,6 +47,7 @@ export default defineConfig(({ command }) => ({
         useFlatConfig: true,
       },
     }),
-    command === "build" && dts({ rollupTypes: true }),
+    command === "build" &&
+      dts({ tsconfigPath: "./tsconfig.build.json", rollupTypes: true }),
   ],
 }));
