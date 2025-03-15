@@ -25,7 +25,7 @@ export const useQueryActionEmitter: QueryActionEmitterHook = (
   const { mutate } = useMutation({
     mutationKey: queryKey,
     mutationFn: (args: Params) => action(...args),
-    onSuccess,
+    onSuccess: (data, args) => onSuccess?.(data, ...args),
     onError,
   });
 
@@ -37,7 +37,7 @@ export const useQueryActionEmitter: QueryActionEmitterHook = (
   const perform = useCallback(
     (...args: Params) => mutate(args),
     [mutate],
-  ) as QueryActionEmitterHookInvoker<Action>;
+  ) as QueryActionEmitterHookPerformer<Action>;
 
   const { data, status, error } = mutations[mutations.length - 1] ?? {};
 
@@ -51,7 +51,14 @@ export const useQueryActionEmitter: QueryActionEmitterHook = (
       });
     },
     [queryClient, queryKey],
-  ) as QueryActionEmitterHookInvoker<Action>;
+  ) as QueryActionEmitterHookInvalidator<Action>;
+
+  const setData = useCallback<QueryActionEmitterHookDataSetter<Action>>(
+    (updater, ...args) => {
+      queryClient.setQueryData(queryKey.concat(args), updater);
+    },
+    [queryClient, queryKey],
+  );
 
   return {
     data,
@@ -60,6 +67,7 @@ export const useQueryActionEmitter: QueryActionEmitterHook = (
     error,
     perform,
     invalidate,
+    setData,
   };
 };
 
@@ -74,7 +82,10 @@ export interface QueryActionEmitterHookOptions<Action extends QueryAction> {
   /**
    * Callback will be called when action successfully fetched
    */
-  onSuccess?: (data: Awaited<ReturnType<Action>>) => void;
+  onSuccess?: (
+    data: Awaited<ReturnType<Action>>,
+    ...args: Parameters<Action>
+  ) => void;
 
   /**
    * Callback will be called when error occurs
@@ -82,10 +93,23 @@ export interface QueryActionEmitterHookOptions<Action extends QueryAction> {
   onError?: (error: unknown) => void;
 }
 
-export type QueryActionEmitterHookInvoker<Action extends QueryAction> =
+type QueryActionGuardedParameters<Action extends QueryAction> =
   Parameters<Action> extends void[] & never[]
-    ? (...args: void[] & never[]) => void
-    : (...args: Parameters<Action>) => void;
+    ? void[] & never[]
+    : Parameters<Action>;
+
+export type QueryActionEmitterHookPerformer<Action extends QueryAction> = (
+  ...args: QueryActionGuardedParameters<Action>
+) => void;
+
+export type QueryActionEmitterHookInvalidator<Action extends QueryAction> = (
+  ...args: QueryActionGuardedParameters<Action>
+) => void;
+
+export type QueryActionEmitterHookDataSetter<
+  Action extends QueryAction,
+  Data = Awaited<ReturnType<Action>>,
+> = (updater: (data: Data) => Data, ...args: Parameters<Action>) => void;
 
 export interface QueryActionEmitterHookResult<
   Action extends QueryAction,
@@ -95,6 +119,7 @@ export interface QueryActionEmitterHookResult<
   isLoading: boolean;
   isSuccess: boolean;
   error: unknown;
-  perform: QueryActionEmitterHookInvoker<Action>;
-  invalidate: QueryActionEmitterHookInvoker<Action>;
+  perform: QueryActionEmitterHookPerformer<Action>;
+  invalidate: QueryActionEmitterHookInvalidator<Action>;
+  setData: QueryActionEmitterHookDataSetter<Action>;
 }

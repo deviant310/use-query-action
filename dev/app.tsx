@@ -9,9 +9,12 @@ export const App = () => {
     select: ({ greeting }) => greeting,
   });
 
+  const { setData } = useQueryAction(action);
+
   const onClick = useCallback(() => {
+    setData(data => ({ greeting: data.greeting + " new data" }));
     //perform()
-  }, []);
+  }, [setData]);
 
   return (
     <>
