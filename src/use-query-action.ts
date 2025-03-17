@@ -9,6 +9,11 @@ import {
   QueryActionEmitterHookResult,
 } from "./hooks";
 
+export type {
+  QueryActionEmitterHookPerformer,
+  QueryActionGuardedParameters,
+} from "./hooks";
+
 export const useQueryAction: QueryActionHook = (action, ...hookArgs) => {
   if (Array.isArray(hookArgs[0])) {
     const [args, options] = <const>[

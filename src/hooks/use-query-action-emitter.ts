@@ -93,7 +93,7 @@ export interface QueryActionEmitterHookOptions<Action extends QueryAction> {
   onError?: (error: unknown) => void;
 }
 
-type QueryActionGuardedParameters<Action extends QueryAction> =
+export type QueryActionGuardedParameters<Action extends QueryAction> =
   Parameters<Action> extends void[] & never[]
     ? void[] & never[]
     : Parameters<Action>;
