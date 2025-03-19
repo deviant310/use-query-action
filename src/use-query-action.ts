@@ -1,4 +1,4 @@
-import { QueryAction } from "./helpers";
+import { QueryAction, QueryActionParams } from "./helpers";
 import {
   useQueryActionSubscriber,
   QueryActionSubscriberHookOptions,
@@ -7,6 +7,7 @@ import {
   useQueryActionEmitter,
   QueryActionEmitterHook,
   QueryActionEmitterHookResult,
+  QueryActionEmitterHookOptions,
 } from "./hooks";
 
 export type {
@@ -14,15 +15,20 @@ export type {
   QueryActionGuardedParameters,
 } from "./hooks";
 
-export const useQueryAction: QueryActionHook = (action, ...hookArgs) => {
+export const useQueryAction: QueryActionHook = (action, ...rest) => {
+  const hookArgs = rest as [
+    (
+      | QueryActionParams<typeof action>
+      | QueryActionEmitterHookOptions<typeof action>
+    )?,
+    (QueryActionSubscriberHookOptions<typeof action> & {
+      initialData: unknown;
+      placeholderData: unknown;
+    })?,
+  ];
+
   if (Array.isArray(hookArgs[0])) {
-    const [args, options] = <const>[
-      hookArgs[0],
-      hookArgs[1] as QueryActionSubscriberHookOptions<typeof action> & {
-        initialData: unknown;
-        placeholderData: unknown;
-      },
-    ];
+    const [args, options] = hookArgs;
 
     return <QueryActionHookResult<typeof action>>(
       useQueryActionSubscriber.call(null, action, args, options)

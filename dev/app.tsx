@@ -3,38 +3,54 @@ import { useCallback } from "react";
 import { useQueryAction } from "../src";
 
 export const App = () => {
-  const { data, isLoading } = useQueryAction(action, [], {
+  const { data: greeting, isLoading } = useQueryAction(action, [5], {
     placeholderData: { greeting: "initial data" },
     refetchOnMount: ({ options }) => !options.initialData,
     select: ({ greeting }) => greeting,
   });
 
+  const { perform } = useQueryAction(action, {
+    onPerform() {
+      return Date.now();
+    },
+    onSuccess(data, args, ctx) {
+      console.log(data, args, ctx);
+    },
+  });
+
   const { setData } = useQueryAction(action);
 
-  const onClick = useCallback(() => {
-    setData(data => ({ greeting: data.greeting + " new data" }));
-    //perform()
+  const injectData = useCallback(() => {
+    setData(data => ({ greeting: data.greeting + " new data" }), 5);
   }, [setData]);
+
+  const patchData = useCallback(() => {
+    perform(3);
+  }, [perform]);
 
   return (
     <>
-      <button onClick={onClick} disabled={isLoading}>
-        Reload data
+      <button onClick={injectData} disabled={isLoading}>
+        Inject data
       </button>
 
-      {!data && isLoading && <div>loading...</div>}
+      <button onClick={patchData} disabled={isLoading}>
+        Patch data
+      </button>
 
-      {data && <div style={{ opacity: isLoading ? 0.5 : 1 }}>{data}</div>}
+      {!greeting && isLoading && <div>loading...</div>}
+
+      {greeting && (
+        <div style={{ opacity: isLoading ? 0.5 : 1 }}>{greeting}</div>
+      )}
     </>
   );
 };
 
-const action = async () => {
-  console.log("request initiated!");
-
+const action = async (id: number) => {
   return new Promise<{ greeting: string }>(resolve =>
     setTimeout(() => {
-      resolve({ greeting: "fetched data" });
+      resolve({ greeting: `fetched ${id} data` });
     }, 1000),
   );
 };

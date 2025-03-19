@@ -7,12 +7,12 @@ import { getQueryActionKey, QueryAction, QueryActionParams } from "../helpers";
 export const useQueryActionSubscriber: QueryActionSubscriberHook = (
   action,
   args,
-  options,
+  options = {},
 ) => {
   type Action = typeof action;
   type Data = Awaited<ReturnType<Action>>;
 
-  const { keepFresh, onError, subscribeOnly, ...restOptions } = options ?? {};
+  const { keepFresh, subscribeOnly, ...restOptions } = options;
 
   const queryKey = useMemo(
     () => [getQueryActionKey(action), ...args],
@@ -40,15 +40,6 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
     if (keepFresh) return Infinity;
   }, [keepFresh]);
 
-  const throwOnError = useCallback(
-    (error: Error) => {
-      onError?.(error);
-
-      return false;
-    },
-    [onError],
-  );
-
   const {
     data,
     isFetching: isLoading,
@@ -60,7 +51,6 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
     enabled,
     gcTime,
     staleTime,
-    throwOnError,
     ...restOptions,
   });
 
@@ -68,7 +58,8 @@ export const useQueryActionSubscriber: QueryActionSubscriberHook = (
 };
 
 export interface QueryActionSubscriberHook {
-  <Action extends QueryAction, Data = Awaited<ReturnType<Action>>>(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  <Action extends QueryAction, Data = Awaited<ReturnType<Action>>, _ = unknown>(
     action: Action,
     params: QueryActionParams<Action>,
     options?: QueryActionSubscriberHookOptions<Action, Data>,
@@ -76,7 +67,8 @@ export interface QueryActionSubscriberHook {
 }
 
 export interface QueryActionSubscriberHook {
-  <Action extends QueryAction, Data = Awaited<ReturnType<Action>>>(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  <Action extends QueryAction, Data = Awaited<ReturnType<Action>>, _ = unknown>(
     action: Action,
     params: QueryActionParams<Action>,
     options?: QueryActionSubscriberHookOptions<Action, Data> & {
@@ -86,7 +78,8 @@ export interface QueryActionSubscriberHook {
 }
 
 export interface QueryActionSubscriberHook {
-  <Action extends QueryAction, Data = Awaited<ReturnType<Action>>>(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  <Action extends QueryAction, Data = Awaited<ReturnType<Action>>, _ = unknown>(
     action: Action,
     params: QueryActionParams<Action>,
     options?: QueryActionSubscriberHookOptions<Action, Data> & {
@@ -100,17 +93,12 @@ export interface QueryActionSubscriberHookOptions<
   Data = Awaited<ReturnType<Action>>,
 > extends Omit<
     UseQueryOptions<Awaited<ReturnType<Action>>, Error, Data>,
-    "queryKey" | "queryFn" | "staleTime" | "gcTime" | "throwOnError" | "enabled"
+    "queryKey" | "queryFn" | "staleTime" | "gcTime" | "enabled"
   > {
   /**
    * If `true` – once fetched `data` will never becomes staled.
    */
   keepFresh?: boolean;
-
-  /**
-   * Callback will be called when error occurs
-   */
-  onError?: (error: unknown) => void;
 
   /**
    * If `true` – action will never be fetched, only subscription will work

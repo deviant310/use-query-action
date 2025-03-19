@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 import {
   MutationState,
   useMutation,
+  UseMutationOptions,
   useMutationState,
   useQueryClient,
 } from "@tanstack/react-query";
@@ -11,13 +12,13 @@ import { getQueryActionKey, QueryAction } from "../helpers";
 
 export const useQueryActionEmitter: QueryActionEmitterHook = (
   action,
-  options,
+  options = {},
 ) => {
   type Action = typeof action;
   type Params = Parameters<Action>;
   type Data = Awaited<ReturnType<Action>>;
 
-  const { onSuccess, onError } = options ?? {};
+  const { onPerform, ...restOptions } = options;
 
   const queryClient = useQueryClient();
   const queryKey = useMemo(() => [getQueryActionKey(action)], [action]);
@@ -25,8 +26,8 @@ export const useQueryActionEmitter: QueryActionEmitterHook = (
   const { mutate } = useMutation({
     mutationKey: queryKey,
     mutationFn: (args: Params) => action(...args),
-    onSuccess: (data, args) => onSuccess?.(data, ...args),
-    onError,
+    onMutate: onPerform,
+    ...restOptions,
   });
 
   const mutations = useMutationState({
@@ -72,25 +73,29 @@ export const useQueryActionEmitter: QueryActionEmitterHook = (
 };
 
 export interface QueryActionEmitterHook {
-  <Action extends QueryAction, Data = Awaited<ReturnType<Action>>>(
+  <
+    Action extends QueryAction,
+    Data = Awaited<ReturnType<Action>>,
+    Context = unknown,
+  >(
     action: Action,
-    options?: QueryActionEmitterHookOptions<Action>,
+    options?: QueryActionEmitterHookOptions<Action, Context>,
   ): QueryActionEmitterHookResult<Action, Data | undefined>;
 }
 
-export interface QueryActionEmitterHookOptions<Action extends QueryAction> {
-  /**
-   * Callback will be called when action successfully fetched
-   */
-  onSuccess?: (
-    data: Awaited<ReturnType<Action>>,
-    ...args: Parameters<Action>
-  ) => void;
-
-  /**
-   * Callback will be called when error occurs
-   */
-  onError?: (error: unknown) => void;
+export interface QueryActionEmitterHookOptions<
+  Action extends QueryAction,
+  Context = unknown,
+> extends Omit<
+    UseMutationOptions<
+      Awaited<ReturnType<Action>>,
+      Error,
+      Parameters<Action>,
+      Context
+    >,
+    "mutationKey" | "mutationFn" | "onMutate"
+  > {
+  onPerform?(args: Parameters<Action>): Context;
 }
 
 export type QueryActionGuardedParameters<Action extends QueryAction> =
