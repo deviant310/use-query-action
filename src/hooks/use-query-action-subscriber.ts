@@ -77,17 +77,6 @@ export interface QueryActionSubscriberHook {
   ): QueryActionSubscriberHookResult<Action, Data>;
 }
 
-export interface QueryActionSubscriberHook {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  <Action extends QueryAction, Data = Awaited<ReturnType<Action>>, _ = unknown>(
-    action: Action,
-    params: QueryActionParams<Action>,
-    options?: QueryActionSubscriberHookOptions<Action, Data> & {
-      placeholderData: Awaited<ReturnType<Action>>;
-    },
-  ): QueryActionSubscriberHookResult<Action, Data>;
-}
-
 export interface QueryActionSubscriberHookOptions<
   Action extends QueryAction,
   Data = Awaited<ReturnType<Action>>,

@@ -23,7 +23,6 @@ export const useQueryAction: QueryActionHook = (action, ...rest) => {
     )?,
     (QueryActionSubscriberHookOptions<typeof action> & {
       initialData: unknown;
-      placeholderData: unknown;
     })?,
   ];
 
@@ -48,3 +47,5 @@ export type QueryActionHook = QueryActionSubscriberHook &
 export type QueryActionHookResult<Action extends QueryAction> =
   QueryActionSubscriberHookResult<Action> &
     QueryActionEmitterHookResult<Action>;
+
+// New test file creation is not applicable to this file.
