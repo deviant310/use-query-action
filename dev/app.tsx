@@ -3,7 +3,11 @@ import { useCallback } from "react";
 import { useQueryAction } from "../src";
 
 export const App = () => {
-  const { data: greeting, isLoading } = useQueryAction(action, [5], {
+  const {
+    data: greeting,
+    isLoading,
+    error,
+  } = useQueryAction(action, [5], {
     placeholderData: { greeting: "initial data" },
     refetchOnMount: ({ options }) => !options.initialData,
     select: ({ greeting }) => greeting,

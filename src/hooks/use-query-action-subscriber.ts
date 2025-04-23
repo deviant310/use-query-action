@@ -102,5 +102,5 @@ export interface QueryActionSubscriberHookResult<
   data: Data;
   isLoading: boolean;
   isSuccess: boolean;
-  error: unknown;
+  error: Error | null;
 }
